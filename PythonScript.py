@@ -4,43 +4,95 @@ file = "answers.txt"
 f = open(file, "r")
 
 line = f.read()
-line = line.split("\n")
+lineA = line.split("\n")
+
+file = "mailexchange.txt"
+f = open(file, "r")
+
+line = f.read()
+lineMX = line.split("\n")
 
 
-length = len(line)
+lengthA = len(lineA)
+lengthMX = len(lineMX)
 n = 0
 i = 0
+q = 0
 y = 0
-x = 0
-tabs = 0
+t = 0
 
-# For as many times as there are domains...
+# For as many times as there are lines...
 
-for n in range(length-1):
-    domain = []
+for n in range(lengthA - 1):
+    domainA = []
     ip = []
 
     # Extracts domain line by line
-    while line[n][i] != "\t":
-        domain += line[n][i]
+    while lineA[n][i] != "\t":
+        domainA += lineA[n][i]
         i += 1
 
-    # Extracts IP line by line
-    for x in range(len(line[n])):
+    # Extracts IP's
+    for x in range(len(lineA[n])):
         y = x + 2
 
-        if line[n][x] == 'A':
-            while y < len(line[n]):
-                ip += line[n][y]
+        if lineA[n][x] == 'A':
+            while y < len(lineA[n]):
+                ip += lineA[n][y]
                 y += 1
 
+
+
     # Prints domain with matching IP
-    domain = "".join(domain)
-    domain = domain.lower()
-    print(domain, end = "\t")
+    domainA = "".join(domainA)
+    domainA = domainA.lower()
+    print(domainA, end = "\t\t")
 
     ip = "".join(ip)
     print(ip)
 
-    n += 1
+    #n += 1
     i = 0
+
+
+
+#####################################################
+#####################################################
+
+# Switch from domains with IP's to domains with XP's
+
+#####################################################
+#####################################################
+
+print("\n\n")
+
+
+for m in range(lengthMX - 1):
+    domainMX = []
+    mx = []
+
+    # Extracts domain line by line
+    while lineMX[m][q] != "\t":
+        domainMX += lineMX[m][q]
+        q += 1
+
+    # Extracts MX's
+    for r in range(len(lineMX[m])):
+        t = r + 1
+        #print(lineMX[m][t])
+
+        if lineMX[m][r] == "X":
+            while t < len(lineMX[m]):
+                mx += lineMX[m][t]
+                t += 1
+
+
+    # Prints domain with matching MX
+    domainMX = "".join(domainMX)
+    domainMX = domainMX.lower()
+    print(domainMX, end = "\t")
+
+    mx = "".join(mx)
+    print(mx)
+
+    q = 0
