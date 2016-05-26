@@ -1,4 +1,19 @@
 
+
+import sqlite3
+conn = sqlite3.connect('test.db')
+
+c = conn.cursor()
+
+c.execute('''CREATE TABLE ip(Domain TEXT, IP TEXT)''')
+#c.execute("INSERT INTO ip VALUES(?, ?)", (a, b))
+
+c.execute('''CREATE TABLE mx(Domain TEXT, MX TEXT)''')
+#c.execute("INSERT INTO mx VALUES(?, ?)", (c, d))
+
+
+
+
 #file = str(input("file: "))
 file = "answers.txt"
 f = open(file, "r")
@@ -50,9 +65,12 @@ for n in range(lengthA - 1):
 
     ip = "".join(ip)
     print(ip)
-
-    #n += 1
     i = 0
+
+
+
+
+    c.execute("INSERT INTO ip VALUES(?, ?)", (domainA, ip))
 
 
 
@@ -94,5 +112,11 @@ for m in range(lengthMX - 1):
 
     mx = "".join(mx)
     print(mx)
-
     q = 0
+
+
+
+
+    c.execute("INSERT INTO mx VALUES(?, ?)", (domainMX, mx))
+
+conn.commit()
