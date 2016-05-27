@@ -5,10 +5,10 @@ conn = sqlite3.connect('test.db')
 
 c = conn.cursor()
 
-c.execute('''CREATE TABLE ip(Domain TEXT, IP TEXT)''')
+c.execute('''CREATE TABLE IF NOT EXISTS ip(Domain TEXT, IP TEXT, pastIP TEXT)''')
 #c.execute("INSERT INTO ip VALUES(?, ?)", (a, b))
 
-c.execute('''CREATE TABLE mx(Domain TEXT, MX TEXT)''')
+c.execute('''CREATE TABLE IF NOT EXISTS mx(Domain TEXT, MX TEXT, pastMX TEXT)''')
 #c.execute("INSERT INTO mx VALUES(?, ?)", (c, d))
 
 
@@ -35,10 +35,24 @@ i = 0
 q = 0
 y = 0
 t = 0
+lastIP = 'N/A'
+lastMX = 'N/A'
+
+same = 0
+ipList = []
+mxList = []
+
+
+
 
 # For as many times as there are lines...
 
 for n in range(lengthA - 1):
+
+
+    #domainA2 = domainA
+
+
     domainA = []
     ip = []
 
@@ -65,22 +79,27 @@ for n in range(lengthA - 1):
 
     ip = "".join(ip)
     print(ip)
+    ipList.append(ip)
     i = 0
 
+    """
+    if domainA == domainA2 or domainA2 == []:
+        currentDomainA = domainA2
+    else:
+        currentDomainA = domainA
+    """
 
 
-
-    c.execute("INSERT INTO ip VALUES(?, ?)", (domainA, ip))
-
+    #c.execute("INSERT INTO ip VALUES(?, ?, ?)", (domainA, ip, lastIP))
 
 
-#####################################################
-#####################################################
-
-# Switch from domains with IP's to domains with XP's
-
-#####################################################
-#####################################################
+##########################################################
+##########################################################
+##                                                      ##
+##  Switch from domains with IP's to domains with MX's  ##
+##                                                      ##
+##########################################################
+##########################################################
 
 print("\n\n")
 
@@ -112,11 +131,150 @@ for m in range(lengthMX - 1):
 
     mx = "".join(mx)
     print(mx)
+    mxList.append(mx)
     q = 0
 
 
 
 
-    c.execute("INSERT INTO mx VALUES(?, ?)", (domainMX, mx))
+    #c.execute("INSERT INTO mx VALUES(?, ?, ?)", (domainMX, mx, lastMX))
 
 conn.commit()
+
+###########################################################
+###########################################################
+##                                                       ##
+##  Switch from gathering current data to comparing all  ##
+##                                                       ##
+###########################################################
+###########################################################
+
+c.execute("SELECT * FROM ip")
+
+rows = c.fetchall()
+
+domainNum = 0
+domainLow = 0
+
+rowTotal = 0
+pool = False
+
+# Sudo variable for rowTotal determination
+for bow in rows:
+    rowTotal += 1
+
+
+listed = []
+
+rowNum = 0
+
+# Querys stored IP's
+for row in rows:
+    rowNum += 1
+
+
+    if rowNum == rowTotal:
+        rowNum = rowTotal - 1
+        pool = True
+
+    # Slowly forms a complete list using queries to database
+    listed.append(row[1])
+
+
+    if rows[rowNum-1][0] == rows[rowNum][0] and rowNum != rowTotal - 1:
+        domainNum += 1
+    else:
+        domainNum += 1
+
+        if pool == True:
+           rowNum = rowTotal
+
+
+
+        # Check each location in new list against each location wiht cooresponding domain in stored data
+        for k in range(domainLow, domainNum):
+            change = 1
+            for j in range(domainLow, domainNum):
+
+                if ipList[k] == listed[j]:
+                    same += 1
+                    change = 0
+                    break
+
+            # Informs the user if there is a change and updates database to show change
+            if change == 1:
+                print(rows[k][0], "\t", rows[k][1])
+                c.execute("UPDATE ip SET pastIP = ? WHERE ip = ?", (listed[k], rows[k][1]))
+                c.execute("UPDATE ip SET ip = ? WHERE ip = ?", (ipList[k], rows[k][1]))
+                conn.commit()
+
+        domainLow = domainNum
+
+different = 0
+different = rowTotal - same
+print("There have been", different, "IP address changes.")
+
+
+
+#---------------------------------Change-from-ip-to-mx---------------------------------------
+
+same = 0
+
+c.execute("SELECT * FROM mx")
+
+rows = c.fetchall()
+
+domainNum = 0
+domainLow = 0
+
+rowTotal = 0
+pool = False
+
+for bow in rows:
+    rowTotal += 1
+
+
+listed = []
+
+rowNum = 0
+
+for row in rows:
+    rowNum += 1
+
+
+    if rowNum == rowTotal:
+        rowNum = rowTotal - 1
+        pool = True
+
+
+    listed.append(row[1])
+
+
+    if rows[rowNum-1][0] == rows[rowNum][0] and rowNum != rowTotal - 1:
+        domainNum += 1
+    else:
+        domainNum += 1
+
+        if pool == True:
+           rowNum = rowTotal
+
+
+        for k in range(domainLow, domainNum):
+            change = 1
+            for j in range(domainLow, domainNum):
+
+                if mxList[k] == listed[j]:
+                    same += 1
+                    change = 0
+                    break
+
+            if change == 1:
+                print(rows[k][0], "\t", rows[k][1])
+                c.execute("UPDATE mx SET pastMX = ? WHERE mx = ?", (mxList[k], rows[k][1]))
+                conn.commit()
+
+        domainLow = domainNum
+
+different = 0
+different = rowTotal - same
+print("There have been", different, "MX address changes.")
