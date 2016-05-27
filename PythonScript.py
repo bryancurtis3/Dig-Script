@@ -6,12 +6,8 @@ conn = sqlite3.connect('test.db')
 c = conn.cursor()
 
 c.execute('''CREATE TABLE IF NOT EXISTS ip(Domain TEXT, IP TEXT, pastIP TEXT)''')
-#c.execute("INSERT INTO ip VALUES(?, ?)", (a, b))
 
 c.execute('''CREATE TABLE IF NOT EXISTS mx(Domain TEXT, MX TEXT, pastMX TEXT)''')
-#c.execute("INSERT INTO mx VALUES(?, ?)", (c, d))
-
-
 
 
 #file = str(input("file: "))
@@ -82,13 +78,6 @@ for n in range(lengthA - 1):
     ipList.append(ip)
     i = 0
 
-    """
-    if domainA == domainA2 or domainA2 == []:
-        currentDomainA = domainA2
-    else:
-        currentDomainA = domainA
-    """
-
 
     #c.execute("INSERT INTO ip VALUES(?, ?, ?)", (domainA, ip, lastIP))
 
@@ -133,7 +122,6 @@ for m in range(lengthMX - 1):
     print(mx)
     mxList.append(mx)
     q = 0
-
 
 
 
@@ -271,6 +259,7 @@ for row in rows:
             if change == 1:
                 print(rows[k][0], "\t", rows[k][1])
                 c.execute("UPDATE mx SET pastMX = ? WHERE mx = ?", (mxList[k], rows[k][1]))
+                c.execute("UPDATE mx SET mx = ? WHERE mx = ?", (mxList[k], rows[k][1]))
                 conn.commit()
 
         domainLow = domainNum
