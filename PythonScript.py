@@ -9,6 +9,8 @@ c.execute('''CREATE TABLE IF NOT EXISTS ip(Domain TEXT, IP TEXT, pastIP TEXT)'''
 
 c.execute('''CREATE TABLE IF NOT EXISTS mx(Domain TEXT, MX TEXT, pastMX TEXT)''')
 
+c.execute('''CREATE TABLE IF NOT EXISTS txt(Domain TEXT, TXT TEXT, pastTXT TEXT)''')
+
 
 #file = str(input("file: "))
 file = "answers.txt"
@@ -23,9 +25,16 @@ f = open(file, "r")
 line = f.read()
 lineMX = line.split("\n")
 
+file = "text.txt"
+f = open(file, "r")
+
+line = f.read()
+lineT = line.split("\n")
+
 
 lengthA = len(lineA)
 lengthMX = len(lineMX)
+lengthT = len(lineT)
 n = 0
 i = 0
 q = 0
@@ -33,20 +42,18 @@ y = 0
 t = 0
 lastIP = 'N/A'
 lastMX = 'N/A'
+lastTXT = 'N/A'
 
 same = 0
 ipList = []
 mxList = []
-
+txtList = []
 
 
 
 # For as many times as there are lines...
 
 for n in range(lengthA - 1):
-
-
-    #domainA2 = domainA
 
 
     domainA = []
@@ -127,7 +134,65 @@ for m in range(lengthMX - 1):
 
     #c.execute("INSERT INTO mx VALUES(?, ?, ?)", (domainMX, mx, lastMX))
 
+
+
+###########################################################
+###########################################################
+##                                                       ##
+##  Switch from domains with MX's to domains with TXT's  ##
+##                                                       ##
+###########################################################
+###########################################################
+
+print("\n\n")
+
+n = 0
+i = 0
+x = 0
+
+for n in range(lengthT - 1):
+
+
+    domainT = []
+    txt = []
+
+    # Solves the truncation issue
+    if lineT[n][0] == ';':
+        n += 1
+
+
+    # Extracts domain line by line
+    while lineT[n][i] != "\t" and lineT[n][0] != ';':
+        domainT += lineT[n][i]
+        i += 1
+
+    # Extracts TXT's
+    for x in range(len(lineT[n])):
+        y = x + 3
+
+        if lineT[n][x] == 'X':
+            while y < len(lineT[n]):
+                txt += lineT[n][y]
+                y += 1
+
+
+
+    # Prints domain with matching IP
+    domainT = "".join(domainT)
+    domainT = domainT.lower()
+    print(domainT, end = "\t\t")
+
+    txt = "".join(txt)
+    print(txt)
+    txtList.append(txt)
+    i = 0
+
+
+    #c.execute("INSERT INTO txt VALUES(?, ?, ?)", (domainT, txt, lastTXT))
+
+
 conn.commit()
+
 
 ###########################################################
 ###########################################################
@@ -136,6 +201,7 @@ conn.commit()
 ##                                                       ##
 ###########################################################
 ###########################################################
+
 
 c.execute("SELECT * FROM ip")
 
@@ -183,7 +249,7 @@ for row in rows:
         for k in range(domainLow, domainNum):
             change = 1
             for j in range(domainLow, domainNum):
-
+                #print(k, "\t", j)
                 if ipList[k] == listed[j]:
                     same += 1
                     change = 0
@@ -267,3 +333,73 @@ for row in rows:
 different = 0
 different = rowTotal - same
 print("There have been", different, "MX address changes.")
+
+
+#-----------------------------change-from-mx-to-txt------------------------------
+
+same = 0
+
+c.execute("SELECT * FROM txt")
+
+rows = c.fetchall()
+
+domainNum = 0
+domainLow = 0
+
+rowTotal = 0
+pool = False
+
+# Sudo variable for rowTotal determination
+for bow in rows:
+    rowTotal += 1
+
+
+listed = []
+
+rowNum = 0
+
+# Querys stored IP's
+for row in rows:
+    rowNum += 1
+
+
+    if rowNum == rowTotal:
+        rowNum = rowTotal - 1
+        pool = True
+
+    # Slowly forms a complete list using queries to database
+    listed.append(row[1])
+
+
+    if rows[rowNum-1][0] == rows[rowNum][0] and rowNum != rowTotal - 1:
+        domainNum += 1
+    else:
+        domainNum += 1
+
+        if pool == True:
+           rowNum = rowTotal
+
+
+
+        # Check each location in new list against each location wiht cooresponding domain in stored data
+        for k in range(domainLow, domainNum):
+            change = 1
+            for j in range(domainLow, domainNum):
+
+                if txtList[k] == listed[j]:
+                    same += 1
+                    change = 0
+                    break
+
+            # Informs the user if there is a change and updates database to show change
+            if change == 1:
+                print(rows[k][0], "\t", rows[k][1])
+                c.execute("UPDATE txt SET pastTXT = ? WHERE txt = ?", (listed[k], rows[k][1]))
+                c.execute("UPDATE txt SET txt = ? WHERE txt = ?", (txtList[k], rows[k][1]))
+                conn.commit()
+
+        domainLow = domainNum
+
+different = 0
+different = rowTotal - same
+print("There have been", different, "TXT line changes.")
