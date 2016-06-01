@@ -1,5 +1,4 @@
 
-
 import sqlite3
 conn = sqlite3.connect('test.db')
 
@@ -59,8 +58,14 @@ for n in range(lengthA - 1):
     domainA = []
     ip = []
 
+    if "\t" not in lineA[n] and ' ' not in lineA[n] or lineA[n][0] == ";":
+        n += 1
+
+
+
     # Extracts domain line by line
-    while lineA[n][i] != "\t":
+    while lineA[n][i] != "\t" and lineA[n][i] != ' ':
+        #print(lineA[n][i])
         domainA += lineA[n][i]
         i += 1
 
@@ -78,15 +83,15 @@ for n in range(lengthA - 1):
     # Prints domain with matching IP
     domainA = "".join(domainA)
     domainA = domainA.lower()
-    print(domainA, end = "\t\t")
+    #print(domainA)
 
     ip = "".join(ip)
-    print(ip)
+    #print(ip)
     ipList.append(ip)
     i = 0
 
 
-    #c.execute("INSERT INTO ip VALUES(?, ?, ?)", (domainA, ip, lastIP))
+    c.execute("INSERT INTO ip VALUES(?, ?, ?)", (domainA, ip, lastIP))
 
 
 ##########################################################
@@ -97,22 +102,27 @@ for n in range(lengthA - 1):
 ##########################################################
 ##########################################################
 
-print("\n\n")
+#print("\n\n")
 
 
 for m in range(lengthMX - 1):
     domainMX = []
     mx = []
 
+
+    if "\t" not in lineMX[m] and ' ' not in lineMX[m] or lineMX[m][0] == ";" :
+        m += 1
+
+
+
     # Extracts domain line by line
-    while lineMX[m][q] != "\t":
+    while lineMX[m][q] != "\t" and lineMX[m][q] != ' ':
         domainMX += lineMX[m][q]
         q += 1
 
     # Extracts MX's
     for r in range(len(lineMX[m])):
         t = r + 1
-        #print(lineMX[m][t])
 
         if lineMX[m][r] == "X":
             while t < len(lineMX[m]):
@@ -123,16 +133,16 @@ for m in range(lengthMX - 1):
     # Prints domain with matching MX
     domainMX = "".join(domainMX)
     domainMX = domainMX.lower()
-    print(domainMX, end = "\t")
+    #print(domainMX)
 
     mx = "".join(mx)
-    print(mx)
+    #print(mx)
     mxList.append(mx)
     q = 0
 
 
 
-    #c.execute("INSERT INTO mx VALUES(?, ?, ?)", (domainMX, mx, lastMX))
+    c.execute("INSERT INTO mx VALUES(?, ?, ?)", (domainMX, mx, lastMX))
 
 
 
@@ -144,7 +154,7 @@ for m in range(lengthMX - 1):
 ###########################################################
 ###########################################################
 
-print("\n\n")
+#print("\n\n")
 
 n = 0
 i = 0
@@ -157,7 +167,8 @@ for n in range(lengthT - 1):
     txt = []
 
     # Solves the truncation issue
-    if lineT[n][0] == ';':
+
+    if "\t" not in lineT[n] or lineT[n][0] == ';':
         n += 1
 
 
@@ -180,15 +191,15 @@ for n in range(lengthT - 1):
     # Prints domain with matching IP
     domainT = "".join(domainT)
     domainT = domainT.lower()
-    print(domainT, end = "\t\t")
+    #print(domainT, end = "\t\t")
 
     txt = "".join(txt)
-    print(txt)
+    #print(txt)
     txtList.append(txt)
     i = 0
 
 
-    #c.execute("INSERT INTO txt VALUES(?, ?, ?)", (domainT, txt, lastTXT))
+    c.execute("INSERT INTO txt VALUES(?, ?, ?)", (domainT, txt, lastTXT))
 
 
 conn.commit()
@@ -245,7 +256,7 @@ for row in rows:
 
 
 
-        # Check each location in new list against each location wiht cooresponding domain in stored data
+        # Check each location in new list against each location with cooresponding domain in stored data
         for k in range(domainLow, domainNum):
             change = 1
             for j in range(domainLow, domainNum):
@@ -358,7 +369,7 @@ listed = []
 
 rowNum = 0
 
-# Querys stored IP's
+# Querys stored TXT's
 for row in rows:
     rowNum += 1
 
@@ -381,7 +392,7 @@ for row in rows:
 
 
 
-        # Check each location in new list against each location wiht cooresponding domain in stored data
+        # Check each location in new list against each location with cooresponding domain in stored data
         for k in range(domainLow, domainNum):
             change = 1
             for j in range(domainLow, domainNum):
